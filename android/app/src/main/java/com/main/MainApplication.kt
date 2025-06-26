@@ -1,4 +1,4 @@
-package com.test_page
+package com.main
 
 import android.app.Application
 import com.facebook.react.PackageList

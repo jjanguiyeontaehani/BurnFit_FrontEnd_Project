@@ -1,5 +1,8 @@
 # BurnFit Frontend Project
-This is my first React Native App Project, so ill figure more learning about what React Native is
+This is my first React Native App Project, so ill figure more learning about it.
+and ill never use ChatBot, Copilot
+
+## 
 
 **Enjoy!**
 
