@@ -1,3 +1,8 @@
+# BurnFit Frontend Project
+This is my first React Native App Project, so ill figure more learning about what React Native is
+
+**Enjoy!**
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started
