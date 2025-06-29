@@ -1,16 +1,17 @@
-import { StatusBar, StyleSheet, useColorScheme, View, Text } from 'react-native';
+import { StatusBar, useColorScheme, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { HomeScreen } from './screens/Home_screen';
-import { ProfileScreen } from './screens/Profile_screen';
+import { CalendarScreen } from './screens/Calendar_screen';
+import { LibraryScreen } from './screens/Library_screen';
+import { MyPageScreen } from './screens/MyPage_screen';
 
 function App() {
   return (
     <NavigationContainer>
       <RootTab />
     </NavigationContainer>
-
   );
 }
 
@@ -18,15 +19,17 @@ const Tab = createBottomTabNavigator();
 
 function RootTab() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+    <Tab.Navigator screenOptions={{
+      headerShown: false
+    }}>
+      <Tab.Screen name="HOME" component={HomeScreen} />
+      <Tab.Screen name="CALENDAR" component={CalendarScreen} />
+      <Tab.Screen name="LIBRARY" component={LibraryScreen} />
+      <Tab.Screen name="MY PAGE" component={MyPageScreen} />
     </Tab.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
 
-});
 
 export default App;

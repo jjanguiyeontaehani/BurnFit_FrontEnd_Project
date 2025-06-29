@@ -53,7 +53,6 @@ function App() {
 NavigationContainer 컴포넌트를 사용하지 않아서 발생한 문제였음
 
 
-
 **Enjoy!**
 
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).

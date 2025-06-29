@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native';
 import { styles } from '../styles/styles';
 
-export const HomeScreen = () => {
+export function MyPageScreen(){
   return (
     <View style={styles.container}>
-        <Text style={styles.text}>Welcome to the Home Screen!</Text>
+        <Text style={styles.text}>Welcome to the MyPage Screen!</Text>
     </View>
   );
 };
