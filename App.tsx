@@ -19,7 +19,8 @@ const Tab = createBottomTabNavigator();
 function RootTab() {
   return (
     <Tab.Navigator screenOptions={{
-      headerShown: false
+      headerShown: false,
+      animation: 'shift',
     }}>
       <Tab.Screen name="HOME" component={HomeScreen} />
       <Tab.Screen name="CALENDAR" component={CalendarScreen} />
