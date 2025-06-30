@@ -15,13 +15,15 @@
     - 검토 담당자의 시간을 아끼려면 조금 못생겨도 개발 과정 중 생각과 세부 내용을 어느 정도는 정리하는 것이 좋아 보임 (깃헙에서 update 기록을 자세히 남기는 것도 가능할텐데.. 써본 적이 없어서 README 로 대체..)
 
 ## 프로젝트 개발 과정
-1. 기본 환경 구성
-    * 처음 설치 시 블로그에서 JDK 11 을 깔길래 따라했다가, 에러 코드 보고 17로 업데이트
-    * 처음 구성 시 기본 디렉토리가 내가 생각한 것 안에 폴더로 또 생성되어 수정, 에러 코드 보고 test_page 관련 변수?를 main으로 수정
-2. 리액트 네이티브의 화면 및 연결 분석
-    * 기본적인 화면 연결 및 동작은 App.tsx 에서 이루어지는 것으로 보임
-3. 기능 구현 (Level 1)
-    * 예제 참고 [**Bottom Tabs Navigator**](https://reactnavigation.org/docs/bottom-tab-navigator/)
+
+### 기본 환경 구성
+- 처음 설치 시 블로그에서 JDK 11 을 깔길래 따라했다가, 에러 코드 보고 17로 업데이트
+- 처음 구성 시 기본 디렉토리가 내가 생각한 것 안에 폴더로 또 생성되어 수정, 에러 코드 보고 test_page 관련 변수?를 main으로 수정
+### 리액트 네이티브의 화면 및 연결 분석
+- 기본적인 화면 연결 및 동작은 App.tsx 에서 이루어지는 것으로 보임
+### 기능 구현 (Level 1)
+> **예제 참고** [**Bottom Tabs Navigator**](https://reactnavigation.org/docs/bottom-tab-navigator/)
+
 
 > **에러 발생**: Cant find ViewManager 'RNCSafeAreaProvider' ...
 
@@ -39,6 +41,7 @@ npm install react-native-safe-area-context
 ```
 
 라이브 빌드 중 컴포넌트 동적 할당쪽 문제가 있었는지 
+
 ```tsx
 function App() {
   return (
@@ -47,108 +50,51 @@ function App() {
     </View>
   )
 ```
+
 같이 화면 재구성 후 돌려보니 잘 동작함
 
 이후 추가로 UI 가 보이지 않던 문제는
 NavigationContainer 컴포넌트를 사용하지 않아서 발생한 문제였음
 
+### 기능 구현 (Level 2)
+- 외부 캘린더 라이브러리가 무엇인지 먼저 확인해봄
+- 기본 구현된 캘린더 라이브러리 유무를 확인해봄
+    - 딱히 찾지 못함
+    - 아마도 직접 하나하나 구현하는 형태를 원하는 것으로 보임
+
+클래스의 형태로 구현하려 해보니, 값의 변경에 따른 UI 업데이트가 되지 않음 
+> Qt는 이런 형태로 짜도 내부 타이머로 주기적 참조 및 업데이트가 진행되는 형태였으나, 리액트 네이티브는 이벤트 형태로만 동작하는 것으로 추정됨
+> **참고** [**UI 업데이트 에러**](https://stackoverflow.com/questions/70616008/ui-does-not-update-when-navigate-to-a-screen-in-different-stack)
+
+- 초기
+```tsx
+export class calendar {
+    private thisDate: Date;
+    private selectedDate: Date;
+
+    constructor(thisDate: Date = new Date(), selectedDate: Date = new Date()) {
+        this.thisDate = thisDate;
+        this.selectedDate = selectedDate;
+    }
+
+    public renderCalendar() {
+        const thisDate = this.thisDate; //문제 발생
+        const selectedDate = this.selectedDate; // 문제 발생
+
+        ...
+    }
+```
+- 수정
+```tsx
+export const Calendar = () => {
+    const [thisDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    const renderCalendar = () => {...}
+```
+다만 useState와 관련된 동작은 아직 온전히 이해하지 못함
+
+
+### 기능 구현 (Level 3)
 
 **Enjoy!**
-
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
-
-# Getting Started
-
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
-
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
