@@ -121,6 +121,8 @@ npx react-native start --reset-cache
 공식 문서에서는 위 해결책에 대한 내용이 없어 시간이 좀 걸림
 아마도 기본 실행을 npx 로 하다 보니 cache 가 쌓이는 형태가 달랐던 것으로 추정됨
 
+React Native Gesture Handler의 ReanimatedSwipeable 로 스와이프 및 월, 주 변경, 달력 넘김 등의 이벤트를 처리하려 했으나, 스와이프가 완전히 끝난 후 발생하는 이벤트가 없는 것으로 판단되어 다른 컴포넌트를 이용해보기로 함
+
 
 
 ## 개발 이후
