@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { HomeScreen } from './screens/Home_screen';
 import { CalendarScreen } from './screens/Calendar_screen';
@@ -8,9 +9,11 @@ import { MyPageScreen } from './screens/MyPage_screen';
 
 function App() {
   return (
-    <NavigationContainer>
-      <RootTab />
-    </NavigationContainer>
+    <GestureHandlerRootView>
+      <NavigationContainer>
+        <RootTab />
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
@@ -18,7 +21,8 @@ const Tab = createBottomTabNavigator();
 
 function RootTab() {
   return (
-    <Tab.Navigator screenOptions={{
+    <Tab.Navigator initialRouteName='HOME'
+    screenOptions={{
       headerShown: false,
       animation: 'shift',
     }}>

@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -23,9 +23,10 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: '100%',
-    margin: 20,
     marginTop: 140,
-    padding: 10,
+    padding: 0,
+    borderWidth: 1,
+    borderColor: '#000000',
   },
   calendarInnerContainer: {
     flexDirection: 'row',
@@ -42,7 +43,7 @@ export const styles = StyleSheet.create({
     lineHeight: 30,
     fontSize: 20,
   },
-    calendarRightButton: {
+  calendarRightButton: {
     margin: 5,
     width: 30,
     height: 30,
@@ -60,8 +61,5 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 50,
     fontSize: 18,
-    borderColor: '#00DDFF',
-    borderRadius: 25,
-    borderWidth: 0,
   },
 });
