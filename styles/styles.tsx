@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     color: '#333',
   },
-  calendarContainer: {
+  calendarOuterContainer: {
     alignItems: 'center',
     width: '100%',
     height: '100%',
@@ -28,11 +28,27 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000000',
   },
-  calendarInnerContainer: {
+  calendarTopContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
     justifyContent: 'space-between',
+  },
+  calendarContainer: {
+    flexDirection: 'row',
+  },
+  calendarMapContainer: {
+    flexDirection: 'row',
+    height: 400,
+    width: 400,
+    borderWidth: 1,
+    borderColor: '#FF0000',
+  },
+  calendarWeekContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#00FF00',
   },
   calendarLeftButton: {
     margin: 5,

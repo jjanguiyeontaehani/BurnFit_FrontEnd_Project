@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import Reanimated, { useSharedValue, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Reanimated, { withTiming, withSpring, withSequence, useSharedValue, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
 
 import { styles } from '../styles/styles';
 
@@ -11,6 +11,10 @@ export const Calendar = () => {
     const [selectedDate, setSelectedDate] = useState(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate()));
 
     const calendarType = useSharedValue('month');
+    const calendarHeight = useSharedValue(400);
+    const INITIAL_POSITION = -398;
+    const calendarPosition = useSharedValue(INITIAL_POSITION);
+
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -21,9 +25,42 @@ export const Calendar = () => {
 
         const thisMonthName = months[thisMonth - 1];
 
+        const panGesture = Gesture.Pan()
+            .onUpdate((event) => {
+                calendarPosition.value = INITIAL_POSITION + event.translationX;
+                calendarHeight.value = event.translationY;
+            })
+
+            .onEnd((event) => {
+                calendarHeight.value = withTiming(400);
+
+                if (event.translationX > 150) {
+                    calendarPosition.value = withTiming(INITIAL_POSITION * 2)
+                    calendarPosition.value = INITIAL_POSITION;
+                    
+                    if (calendarType.value === 'week') {
+                        runOnJS(decreaseWeek)();
+                    } else if (calendarType.value === 'month') {
+                        runOnJS(decreaseMonth)();
+                    }
+                } else if (event.translationX < -150) {
+                    calendarPosition.value = withTiming(0)
+                    calendarPosition.value = INITIAL_POSITION;
+                    
+                    if (calendarType.value === 'week') {
+                        runOnJS(increaseWeek)();
+                    } else if (calendarType.value === 'month') {
+                        runOnJS(increaseMonth)();
+                    }
+                } else {
+                    calendarPosition.value = withTiming(INITIAL_POSITION)
+                }
+
+            });
+
         return (
-            <Reanimated.View style={{}}>
-                <View style={styles.calendarInnerContainer}>
+            <View>
+                <View style={styles.calendarTopContainer}>
                     <Pressable onPress={decreaseMonth}>
                         <Text style={styles.calendarLeftButton}>＜</Text>
                     </Pressable>
@@ -34,25 +71,20 @@ export const Calendar = () => {
                         <Text style={styles.calendarRightButton}>＞</Text>
                     </Pressable>
                 </View>
-                {renderMap()}
-            </Reanimated.View>
+                <View style={styles.calendarTopContainer}>
+                    {days.map((day, index) => (
+                        <Text key={index} style={{ color: index == 0 ? '#FF7777' : index == 6 ? '#77DDFF' : '#777777', width: 50, height: 50, alignItems: 'center', justifyContent: 'center', borderColor: '#ccc', textAlign: 'center', lineHeight: 50, }}>
+                            {day}
+                        </Text>
+                    ))}
+                </View>
+                <Reanimated.View style={{ flexDirection: 'column' }}>
+                    <GestureDetector gesture={panGesture}>
+                        {renderMap()}
+                    </GestureDetector>
+                </Reanimated.View>
+            </View>
         );
-    };
-
-    const increaseMonth = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth() + 1, thisDate.getDate()));
-    };
-
-    const decreaseMonth = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth() - 1, thisDate.getDate()));
-    };
-
-    const increaseWeek = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate() + 7));
-    };
-
-    const decreaseWeek = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate() - 7));
     };
 
     const renderMap = () => {
@@ -62,80 +94,51 @@ export const Calendar = () => {
             const maps = generateMonthMap(thisDate);
 
             return (
-                <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                        {days.map((day, index) => (
-                            <Text key={index} style={{ color: index == 0 ? '#FF7777' : index == 6 ? '#77DDFF' : '#777777', width: 50, height: 50, alignItems: 'center', justifyContent: 'center', borderColor: '#ccc', textAlign: 'center', lineHeight: 50, }}>
-                                {day}
-                            </Text>
-                        ))}
-                    </View>
-                    {renderMonthMaps(maps)}
-                </View>
+                renderMonthMaps(maps)
             );
         }
     }
 
     const renderMonthMaps = (maps: any[][][]) => {
         const renderMonthMap = (map: any[][]) => {
-            return (map.map((week, weekIndex) => (
-                <View key={weekIndex} style={styles.calendarInnerContainer}>
-                    {week.map((day, dayIndex) => (
-                        <Pressable
-                            key={dayIndex}
-                            onPress={() => {
-                                setSelectedDate(new Date(day.day.getFullYear(), day.day.getMonth(), day.day.getDate()));
-                            }}
-                            style={styles.calendarDay}
-                        >
-                            <Text style={{ color: day.isThisMonth ? '#000000' : '#BBBBBB', fontWeight: day.isSelected ? 'bold' : 'normal', fontSize: day.isSelected ? 20 : 18, borderWidth: day.isSelected ? 1 : 0, borderColor: '#00DDFF', borderRadius: 25, width: 35, height: 35, textAlign: 'center', lineHeight: 35 }}>
-                                {day.date !== 0 ? day.date : 'UNK'}
-                            </Text>
-                        </Pressable>
+            return (
+                <View style={{ width: '100%', height: '100%' }}>
+                    {map.map((week, weekIndex) => (
+                        <View key={weekIndex} style={styles.calendarWeekContainer}>
+                            {week.map((day, dayIndex) => (
+                                <Pressable
+                                    key={dayIndex}
+                                    onPress={() => {
+                                        setSelectedDate(new Date(day.day.getFullYear(), day.day.getMonth(), day.day.getDate()));
+                                    }}
+                                    style={styles.calendarDay}
+                                >
+                                    <Text style={{ color: day.isThisMonth ? '#000000' : '#BBBBBB', fontWeight: day.isSelected ? 'bold' : 'normal', fontSize: day.isSelected ? 20 : 18, borderWidth: day.isSelected ? 1 : 0, borderColor: '#00DDFF', borderRadius: 25, width: 35, height: 35, textAlign: 'center', lineHeight: 35 }}>
+                                        {day.date !== 0 ? day.date : 'UNK'}
+                                    </Text>
+                                </Pressable>
+                            ))}
+                        </View>
                     ))}
                 </View>
-            ))
             );
         }
 
-        const swipeToLeft = (prog: SharedValue<number>, drag: SharedValue<number>) => {
-            const styleAnimation = useAnimatedStyle(() => {
-                return {
-                    transform: [{ translateX: drag.value - 410 }], // todo: Adjust the value based on your layout
-                };
-            });
-
-            return (
-                <Reanimated.View style={styleAnimation}>
-                    {renderMonthMap(maps[0])}
-                </Reanimated.View>
-            );
-        }
-
-        const swipeToRight = (prog: SharedValue<number>, drag: SharedValue<number>) => {
-            const styleAnimation = useAnimatedStyle(() => {
-                return {
-                    transform: [{ translateX: drag.value + 410 }], // todo: Adjust the value based on your layout
-                };
-            });
-
-            return (
-                <Reanimated.View style={styleAnimation}>
-                    {renderMonthMap(maps[2])}
-                </Reanimated.View>
-            );
-        }
+        const animateStyle = useAnimatedStyle(() => {
+            return {
+                transform: [{ 
+                    translateX: calendarPosition.value
+                }],
+                height: calendarHeight.value,
+            };
+        });
 
         return (
-            <ReanimatedSwipeable
-                friction={1.7}
-                rightThreshold={40}
-                leftThreshold={40}
-                renderRightActions={swipeToRight}
-                renderLeftActions={swipeToLeft}
-            >
+            <Reanimated.View style={[styles.calendarMapContainer, animateStyle]}>
+                {renderMonthMap(maps[0])}
                 {renderMonthMap(maps[1])}
-            </ReanimatedSwipeable>
+                {renderMonthMap(maps[2])}
+            </Reanimated.View>
 
         )
     }
@@ -207,6 +210,29 @@ export const Calendar = () => {
         }
 
         return map;
+    };
+
+    const getThisWeek = () => {
+        const date = new Date(thisDate);
+        const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        
+        return Math.ceil(date.getDate() + firstDayOfMonth.getDay()) / 7;
+    }
+
+    const increaseMonth = () => {
+        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth() + 1, thisDate.getDate()));
+    };
+
+    const decreaseMonth = () => {
+        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth() - 1, thisDate.getDate()));
+    };
+
+    const increaseWeek = () => {
+        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate() + 7));
+    };
+
+    const decreaseWeek = () => {
+        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate() - 7));
     };
 
 

@@ -8,7 +8,7 @@ export const CalendarScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.calendarContainer}>
+      <View style={styles.calendarOuterContainer}>
         <Calendar />
       </View>
     </View>
