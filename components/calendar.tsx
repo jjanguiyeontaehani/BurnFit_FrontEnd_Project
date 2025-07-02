@@ -1,20 +1,72 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Reanimated, { withTiming, withSpring, withSequence, useSharedValue, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
+import Reanimated, { withTiming, useSharedValue, runOnJS, useAnimatedStyle } from 'react-native-reanimated';
 
 import { styles } from '../styles/styles';
 
 
 export const Calendar = () => {
-    const [thisDate, setThisDate] = useState(new Date());
+    const testDate = new Date('2025-07-11');
+    const [thisDate, setThisDate] = useState(new Date(testDate));
+    const [thisWeek, updateThisWeek] = useState(getThisWeek(thisDate));
     const [selectedDate, setSelectedDate] = useState(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate()));
 
-    const calendarType = useSharedValue('month');
-    const calendarHeight = useSharedValue(400);
-    const INITIAL_POSITION = -398;
-    const calendarPosition = useSharedValue(INITIAL_POSITION);
+    useEffect(() => {
+        updateThisWeek(getThisWeek(thisDate));
+    }, [thisDate]);
 
+        function getThisWeek(date: Date | null = null) {
+        if (!date) {
+            date = new Date(thisDate);
+        }
+        const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        return Math.floor((date.getDate() + firstDayOfMonth.getDay()) / 7);
+    }
+
+    const increaseMonth = () => {
+        let newDate = new Date(thisDate);
+        if (newDate.getMonth() === 11) {
+            newDate = new Date(newDate.getFullYear() + 1, 0, 1);
+        } else {
+            newDate = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 1);
+        }
+        setThisDate(newDate);
+    };
+
+    const decreaseMonth = () => {
+        let newDate = new Date(thisDate);
+        if (newDate.getMonth() === 0) {
+            newDate = new Date(newDate.getFullYear() - 1, 11, 1);
+        } else {
+            newDate = new Date(newDate.getFullYear(), newDate.getMonth() - 1, 1);
+        }
+        setThisDate(newDate);
+    };
+
+    const increaseWeek = () => {
+        const newDate = new Date(thisDate);
+        newDate.setDate(thisDate.getDate() + 7);
+
+        setThisDate(newDate);
+    };
+
+    const decreaseWeek = () => {
+        const newDate = new Date(thisDate);
+        newDate.setDate(thisDate.getDate() - 7);
+
+        setThisDate(newDate);
+    };
+
+    const calendarType = useSharedValue('month');
+    const INITIAL_HEIGHT = 300;
+    const MINIMUM_HEIGHT = 50;
+    const calendarHeight = useSharedValue(INITIAL_HEIGHT);
+    const INITIAL_POSITION_X = -398;
+    const calendarPositionX = useSharedValue(INITIAL_POSITION_X);
+    const INITIAL_POSITION_Y = 0;
+    const calendarPositionY = useSharedValue(INITIAL_POSITION_Y);
+    const dateSize = 49.5;
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -27,48 +79,99 @@ export const Calendar = () => {
 
         const panGesture = Gesture.Pan()
             .onUpdate((event) => {
-                calendarPosition.value = INITIAL_POSITION + event.translationX;
-                calendarHeight.value = event.translationY;
+                if (calendarType.value === 'week') {
+                    if (Math.abs(event.translationX) > event.translationY) {
+                        calendarPositionX.value = INITIAL_POSITION_X + event.translationX;
+                        calendarHeight.value = MINIMUM_HEIGHT;
+                    } else {
+                        calendarPositionX.value = INITIAL_POSITION_X;
+
+                        if (MINIMUM_HEIGHT + event.translationY > INITIAL_HEIGHT) {
+                            calendarHeight.value = INITIAL_HEIGHT;
+                        } else {
+                            calendarHeight.value = MINIMUM_HEIGHT + event.translationY;
+
+                            const openRate = (Math.min(event.translationY, (INITIAL_HEIGHT - MINIMUM_HEIGHT))) / (INITIAL_HEIGHT - MINIMUM_HEIGHT);
+                            calendarPositionY.value = INITIAL_POSITION_Y + (thisWeek * -dateSize) * (1 - openRate);
+                        }
+                    }
+                } else if (calendarType.value === 'month') {
+                    if (Math.abs(event.translationX) > -event.translationY) {
+                        calendarHeight.value = INITIAL_HEIGHT;
+                        calendarPositionX.value = INITIAL_POSITION_X + event.translationX;
+                    } else {
+                        calendarPositionX.value = INITIAL_POSITION_X;
+
+                        if (INITIAL_HEIGHT + event.translationY < MINIMUM_HEIGHT) {
+                            calendarHeight.value = MINIMUM_HEIGHT;
+                        } else {
+                            calendarHeight.value = INITIAL_HEIGHT + event.translationY;
+
+                            const flipRate = 1 - ((INITIAL_HEIGHT - MINIMUM_HEIGHT) + Math.min(event.translationY, 0)) / (INITIAL_HEIGHT - MINIMUM_HEIGHT);
+                            calendarPositionY.value = INITIAL_POSITION_Y + (thisWeek * -dateSize) * flipRate;
+                        }
+                    }
+                }
             })
 
             .onEnd((event) => {
-                calendarHeight.value = withTiming(400);
+                if (calendarType.value === 'week') {
+                    if (event.translationY > 80) {
+                        calendarType.value = 'month';
+                        calendarHeight.value = withTiming(INITIAL_HEIGHT);
+                        calendarPositionY.value = withTiming(INITIAL_POSITION_Y);
+                    } else {
+                        calendarHeight.value = withTiming(MINIMUM_HEIGHT);
+                        calendarPositionY.value = withTiming(INITIAL_POSITION_Y + (thisWeek * -dateSize));
+                    }
+                } else if (calendarType.value === 'month') {
+                    if (event.translationY < -80) {
+                        calendarType.value = 'week';
+                        calendarHeight.value = withTiming(MINIMUM_HEIGHT);
+                        calendarPositionY.value = withTiming(INITIAL_POSITION_Y + (thisWeek * -dateSize));
+                    } else {
+                        calendarHeight.value = withTiming(INITIAL_HEIGHT);
+                        calendarPositionY.value = withTiming(INITIAL_POSITION_Y);
+                    }
+
+                }
 
                 if (event.translationX > 150) {
-                    calendarPosition.value = withTiming(INITIAL_POSITION * 2)
-                    calendarPosition.value = INITIAL_POSITION;
-                    
+                    calendarPositionX.value = withTiming(0)
+
                     if (calendarType.value === 'week') {
                         runOnJS(decreaseWeek)();
+                        
                     } else if (calendarType.value === 'month') {
                         runOnJS(decreaseMonth)();
                     }
+                    calendarPositionX.value = INITIAL_POSITION_X;
                 } else if (event.translationX < -150) {
-                    calendarPosition.value = withTiming(0)
-                    calendarPosition.value = INITIAL_POSITION;
-                    
+                    calendarPositionX.value = withTiming(INITIAL_POSITION_X * 2)
+
                     if (calendarType.value === 'week') {
                         runOnJS(increaseWeek)();
                     } else if (calendarType.value === 'month') {
                         runOnJS(increaseMonth)();
                     }
+                    calendarPositionX.value = INITIAL_POSITION_X;
                 } else {
-                    calendarPosition.value = withTiming(INITIAL_POSITION)
+                    calendarPositionX.value = withTiming(INITIAL_POSITION_X)
                 }
 
             });
 
         return (
-            <View>
+            <View style={styles.calendarContainer}>
                 <View style={styles.calendarTopContainer}>
                     <Pressable onPress={decreaseMonth}>
-                        <Text style={styles.calendarLeftButton}>＜</Text>
+                        <Text style={styles.calendarButton}>＜</Text>
                     </Pressable>
                     <Text style={styles.text}>
                         {thisMonthName} {thisYear}
                     </Text>
                     <Pressable onPress={increaseMonth}>
-                        <Text style={styles.calendarRightButton}>＞</Text>
+                        <Text style={styles.calendarButton}>＞</Text>
                     </Pressable>
                 </View>
                 <View style={styles.calendarTopContainer}>
@@ -88,8 +191,12 @@ export const Calendar = () => {
     };
 
     const renderMap = () => {
-        if (calendarType.value === 'week') {
-            // const maps = generateWeekMap(thisDate);
+        if (calendarType.value === 'week') { // todo: week calendar
+            const maps = generateMonthMap(thisDate);
+
+            return (
+                renderMonthMaps(maps)
+            );
         } else if (calendarType.value === 'month') {
             const maps = generateMonthMap(thisDate);
 
@@ -102,7 +209,7 @@ export const Calendar = () => {
     const renderMonthMaps = (maps: any[][][]) => {
         const renderMonthMap = (map: any[][]) => {
             return (
-                <View style={{ width: '100%', height: '100%' }}>
+                <View style={{ width: '100%' }}>
                     {map.map((week, weekIndex) => (
                         <View key={weekIndex} style={styles.calendarWeekContainer}>
                             {week.map((day, dayIndex) => (
@@ -126,18 +233,38 @@ export const Calendar = () => {
 
         const animateStyle = useAnimatedStyle(() => {
             return {
-                transform: [{ 
-                    translateX: calendarPosition.value
+                transform: [{
+                    translateX: calendarPositionX.value
                 }],
                 height: calendarHeight.value,
             };
         });
 
+        const animateStyleY = useAnimatedStyle(() => {
+            return {
+                transform: [{
+                    translateY: calendarPositionY.value
+                }],
+            };
+        });
+
         return (
-            <Reanimated.View style={[styles.calendarMapContainer, animateStyle]}>
-                {renderMonthMap(maps[0])}
-                {renderMonthMap(maps[1])}
-                {renderMonthMap(maps[2])}
+            <Reanimated.View style={[styles.calendarMapsContainer, animateStyle]}>
+                <View style={[styles.calendarMapContainer]}>
+                    <Reanimated.View style={animateStyleY}>
+                        {renderMonthMap(maps[0])}
+                    </Reanimated.View>
+                </View>
+                <View style={[styles.calendarMapContainer]}>
+                    <Reanimated.View style={animateStyleY}>
+                        {renderMonthMap(maps[1])}
+                    </Reanimated.View>
+                </View>
+                <View style={[styles.calendarMapContainer]}>
+                    <Reanimated.View style={animateStyleY}>
+                        {renderMonthMap(maps[2])}
+                    </Reanimated.View>
+                </View>
             </Reanimated.View>
 
         )
@@ -210,29 +337,6 @@ export const Calendar = () => {
         }
 
         return map;
-    };
-
-    const getThisWeek = () => {
-        const date = new Date(thisDate);
-        const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-        
-        return Math.ceil(date.getDate() + firstDayOfMonth.getDay()) / 7;
-    }
-
-    const increaseMonth = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth() + 1, thisDate.getDate()));
-    };
-
-    const decreaseMonth = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth() - 1, thisDate.getDate()));
-    };
-
-    const increaseWeek = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate() + 7));
-    };
-
-    const decreaseWeek = () => {
-        setThisDate(new Date(thisDate.getFullYear(), thisDate.getMonth(), thisDate.getDate() - 7));
     };
 
 

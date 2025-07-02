@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
-    color: '#333',
+    color: '#333333',
   },
   calendarOuterContainer: {
     alignItems: 'center',
@@ -25,8 +25,6 @@ export const styles = StyleSheet.create({
     height: '100%',
     marginTop: 140,
     padding: 0,
-    borderWidth: 1,
-    borderColor: '#000000',
   },
   calendarTopContainer: {
     flexDirection: 'row',
@@ -34,32 +32,28 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   calendarContainer: {
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  calendarMapsContainer: {
     flexDirection: 'row',
+    height: '100%',
+    width: 400,
   },
   calendarMapContainer: {
-    flexDirection: 'row',
-    height: 400,
-    width: 400,
+    overflow: 'hidden',
+    flexDirection: 'column',
+    width: '100%',
+    height: '100%',
     borderWidth: 1,
-    borderColor: '#FF0000',
+    borderColor: '#FFFFFF',
   },
   calendarWeekContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#00FF00',
   },
-  calendarLeftButton: {
-    margin: 5,
-    width: 30,
-    height: 30,
-    textAlign: 'center',
-    color: '#00FFFF',
-    lineHeight: 30,
-    fontSize: 20,
-  },
-  calendarRightButton: {
+  calendarButton: {
     margin: 5,
     width: 30,
     height: 30,
@@ -69,9 +63,7 @@ export const styles = StyleSheet.create({
     fontSize: 20,
   },
   calendarDay: {
-    width: 40,
-    height: 40,
-    margin: 5,
+    margin: 7,
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
